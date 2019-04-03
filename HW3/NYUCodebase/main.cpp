@@ -171,18 +171,17 @@ struct Entity{ //store all info for every object
         }
     }
     void update(float elapsed){ //keeps game and computer in tandem
-        if (!dead)
+        if (!dead) //if alive
         {
-            if (id == 0 || id == 2)
+            if (id == 0 || id == 2) //if alien or player
             {
-                x += elapsed * velocity;
+                x += elapsed * velocity; //update x velocity
             }
             
-            if (id == 4)
+            if (id == 4) //if bullet
             {
-                y = y + elapsed * velocity;
+                y = y + elapsed * velocity; //update y velocity
             }
-            //floa        }
             modelMatrix = glm::mat4(1.0f);
             modelMatrix = glm::translate(modelMatrix, glm::vec3(x, y, 0.0f));
         }
@@ -196,25 +195,22 @@ struct text{
     float text_width=2.5;
     float text_height=1.5;
     float fontsize=.3;
-    std::string textval;
-    SheetSprite* letter_and_spriteholder[13]; //entities created to hold sprite images or text images of size 13
-    //GLuint spritesheet; //stores entire sprite sheet
+    std::string textval; //string value of words being placed so we can tell aske values and find on sprite sheet
+    SheetSprite* letter_and_spriteholder[13]; //entities created to hold sprite images or text images of size 13, each letter goes into each box
     GLuint lettersheet; //stores entire letter sheet
-    glm::mat4 modelMatrix = glm::mat4(1.0f); //translate each vertice so it will be placed correctly
+    glm::mat4 modelMatrix = glm::mat4(1.0f); //translate each object so it will be placed correctly
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     void place_text_ongame(){
         int counterx=0; //counter to loop through array as we add new vals
-        //float space_between_letters= (text_x + text_width) / 13;
         //ax is x coord on the game screen where letter will be placed
         //ax starts at left most side of letter box, and we do that for as long as we are less than the right side ie still in the box, every time we increment i by the games text box/13 so each character has equal space
         for (float ax = text_x + -(text_width / 2); ax < text_x + ((text_width) / 2); ax += ((text_x + text_width) / 13)){
-            //std::cout << ax << std::endl;
             letter_and_spriteholder[counterx] = new SheetSprite(lettersheet,ax,.2,.2,.25,512.0f); //creating the space for the entity itself so it has somewhereto go, next line gets it
             //16 by 16 grid
-            //(text_x_coords(text[counterx]), text_y_coords(text[counterx]), (1.0f/16.0f), (1.0f/16.0f), 1.0f, 1.0f); //changing text coordinates so computer knows where to get image from on sheet
             counterx++;
         }
     }
+    //go through each object and draw it in letter&spriteholder
     void draw(ShaderProgram program){
         int counterx = 0;
         program.SetViewMatrix(viewMatrix);
@@ -228,6 +224,7 @@ struct text{
         }
     }
 };
+//only 1 bullet alive at a time
 struct bullethell
 {
     GLuint tedxt;
@@ -235,13 +232,13 @@ struct bullethell
     {
         tedxt = texid;
     };
-    std::vector<Entity> bullets;
+    std::vector<Entity> bullets; //vector of bullets
     void shoot(float x)
     {
-        //Entity myEEnt(f,);
-        if (bullets.size() < 1)
+        if (bullets.size() < 1) //can change 1 to whatever you want to shoot as many bullets as you like
         {
-            Entity myEntity(x, -.6f, .1, .1, tedxt, .2, 4);
+            //x coor, y coord, height, width, texture pointer, starting velocity,identification(4=bullet)
+            Entity myEntity(x, -.6f, .1, .1, tedxt, .5, 4); //intialize each entity to be a bullet
             myEntity.sprite = SheetSprite(tedxt, 854.0f / 1024.0f, 639.0f / 1024.0f, 9.0f / 1024.0f, 37.0f / 1024.0f, 1);
             bullets.push_back(myEntity);
         }
@@ -250,11 +247,11 @@ struct bullethell
     {
         for (int i = 0; i < bullets.size(); i++) {
             bullets[i].update(elapsed);
-            if (bullets[i].y > 2.0f)
+            if (bullets[i].y > 1.0f) //if a bullet goes off game screen it counts as dead
             {
                 bullets[i].dead = true;
             }
-            if (bullets.back().dead)
+            if (bullets.back().dead) //if last val in vec is dead it will get rid of it
             {
                 bullets.pop_back();
             }
@@ -268,7 +265,7 @@ struct bullethell
     }
 };
 
-struct EntArmy
+struct EntArmy //aliens
 {
     EntArmy() {};
     std::vector<Entity> ents;
@@ -344,8 +341,6 @@ struct EntArmy
         
     }
     void upd(float elapsed) {
-        //glClear(GL_COLOR_BUFFER_BIT);
-        //speedup = .5 * (1.0f - ((float)(alive-2) / 25));
         for (int i = 0; i < ents.size(); i++) {
             ents[i].update(elapsed*xdir);
         }
@@ -392,7 +387,6 @@ int main(int argc, char *argv[])
     bullethell bulletpool(e);
     player.sprite = SheetSprite(e, 211.0f / 1024.0f, 941.0f / 1024.0f, 99.0f / 1024.0f, 75.0f / 1024.0f, 1);
     r.populate(e);
-    //SheetSprite(d,)
     text space;
     text lose;
     lose.textval = "THEGAMEISOVER";
@@ -431,20 +425,17 @@ int main(int argc, char *argv[])
             {
                 bulletpool.shoot(player.x);
             }
-            //entleft.movepaddle(elapsed, 1);
-            //entright.movepaddle(elapsed, 1);
         }
         if (keys[SDL_SCANCODE_LEFT])
         {
-            player.x -= .0001;
+            player.x -= .01;
         }
-        if (keys[SDL_SCANCODE_RIGHT])
+        if (keys[SDL_SCANCODE_RIGHT]) //move right keyboard control
         {
-            player.x += .0001;
+            player.x += .01; //speed spaceship moves right
         }
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(.5f, .3f, .6f, 1.0f);
-        //letterE.DrawSpriteSheetSprite(program, 69, 16, 16);
         if (start)
         {
             space.draw(program);
