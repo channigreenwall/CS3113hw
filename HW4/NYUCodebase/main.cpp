@@ -332,11 +332,11 @@ struct LevelData {
     {
         int p = 0;
         if (id == 1) {
-            Entity* newObj = new Entity(x, y*.8f, .1f, .1f, sheet, glm::vec3(0.0f, 0.0f, 0.0f), 1, 59, 16, 8);
+            Entity* newObj = new Entity(x, y, .1f, .1f, sheet, glm::vec3(0.0f, 0.0f, 0.0f), 1, 60, 16, 8);
             entities.push_back(newObj);
         }
         else if (id == 0) {
-            Player = (Entity(x*.8f, y*.8f, .1f, .1f, sheet, glm::vec3(0.0f,0.0f,0.0f), id, 80, 16, 8));
+            Player = (Entity(x, y, .1f, .1f, sheet, glm::vec3(0.0f,0.0f,0.0f), id, 80, 16, 8));
         }
     }
     bool readEntityData(std::ifstream &stream) {
@@ -360,11 +360,12 @@ struct LevelData {
                 float placeY = atoi(yPosition.c_str())*-sizeoftiles;
                 if (type == "Enemy")
                 {
-                    genEnt(0, placeX, placeY);
+                    genEnt(1, placeX, placeY);
                 }
                 else
                 {
-                    genEnt(1, placeX, placeY);
+                    std::cout<<"Create player"<<std::endl;
+                    genEnt(0, placeX, placeY);
                 }
             }
         }
@@ -372,7 +373,7 @@ struct LevelData {
     }
     void loadThings(std::string &name) {
         sheet = LoadTexture(RESOURCE_FOLDER"arne_sprites.png");
-        std::ifstream infile(name);
+        std::ifstream infile(RESOURCE_FOLDER"slimeTime.txt");
         std::string line;
         while (std::getline(infile, line)) {
             if (line == "[header]") {
@@ -383,7 +384,7 @@ struct LevelData {
             else if (line == "[layer]") {
                 readLayerData(infile);
             }
-            else if (line == "[Object]") {
+            else if (line == "[Objects]") {
                 readEntityData(infile);
             }
         }
@@ -417,15 +418,15 @@ struct LevelData {
             {
                 int val = actlevelData[y][x];
                 if (val != 0 && val != 14 && val != 30) {
-                    if ((obj->x - fabs(obj->width)) <= (sizeoftiles * x)&& xvals >= x && yvals == y)
+                    if ((obj->x - fabs(obj->width)) <= ((sizeoftiles * x)) && xvals >= x && yvals == y && obj->x + (obj->height / 2) >(sizeoftiles * x))
                     {
                         obj->velocity[0] = 0;
-                        obj->x += fabs(((obj->x - (fabs(obj->width)))) - ((sizeoftiles * x))) + 0.0000001f;
+                        obj->x += fabs(((obj->x - (fabs(obj->width)))) - ((sizeoftiles * x))) + 0.0001f;
                     }
-                    if ((obj->x + fabs(obj->width)) >= (sizeoftiles * x) && xvals <= x && yvals == y)
+                    if ((obj->x + fabs(obj->width)) >= (sizeoftiles * x) && xvals <= x && yvals == y && obj->x - (obj->width / 2) <(sizeoftiles * x))
                     {
                         obj->velocity[0] = 0;
-                        obj->x -= fabs((obj->x + (fabs(obj->width)))) - ((sizeoftiles * x)) - 0.0000001f;
+                        obj->x -= fabs((obj->x + (fabs(obj->width)))) - ((sizeoftiles * x)) - sizeoftiles - 0.0001f;
                     }
                 }
             }
@@ -453,8 +454,14 @@ struct LevelData {
     {
         int xvals = (int)(obj->x / sizeoftiles);
         int yvals = (int)(-obj->y / sizeoftiles);
-        bool downcol = false;
+        float ychange = 0.0f;
+        float xchange = 0.0f;
         bool upcol = false;
+        bool downcol = false;
+        bool leftcol = false;
+        bool rightcol = false;
+        //bool downcol = false;
+        //bool upcol = false;
         for (int y = 0; y < mapHeight; y++)
         {
             for (int x = 0; x < mapWidth; x++)
@@ -464,28 +471,61 @@ struct LevelData {
                     if (((obj->y ) - (obj->height)) <= (-sizeoftiles * y) && xvals == x && obj->y + (obj->height / 2) >(-sizeoftiles * y))
                     {
                         obj->velocity[1] = 0;
-                        obj->y += fabs((obj->y - (fabs(obj->width))) - (-sizeoftiles * y)) + .0000001f;
+                        ychange = obj->y + fabs((obj->y - (fabs(obj->width))) - (-sizeoftiles * y)) + .0000001f;
                         obj->floortouch = true;
+                        downcol = true;
+                        
                     }
                     
                     if (((obj->y) + (obj->height)) >= (-sizeoftiles * y) && xvals == x && obj->y - (obj->height / 2) < (-sizeoftiles * y) - sizeoftiles)
                     {
                         obj->velocity[1] = 0;
-                        obj->y -= fabs((obj->y + (fabs(obj->width))) - ((-sizeoftiles * y))) - 0.0000001f;
+                        ychange = obj->y - fabs((obj->y + (fabs(obj->width))) - ((-sizeoftiles * y))) - 0.00000001f;
+                        upcol = true;
+                    }
+                }
+                
+            }
+        }
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                int val = actlevelData[y][x];
+                if (val != 0 && val != 14 && val != 30) {
+                    if ((obj->x - fabs(obj->width)) <= ((sizeoftiles * x)) && xvals >= x && yvals == y && obj->x + (obj->height / 2) >(sizeoftiles * x))
+                    {
+                        obj->velocity[0] = 0;
+                        xchange = obj->x + fabs(((obj->x - (fabs(obj->width)))) - ((sizeoftiles * x))) + 0.0001f;
+                        rightcol = true;
+                    }
+                    if ((obj->x + fabs(obj->width)) >= (sizeoftiles * x) && xvals <= x && yvals == y && obj->x - (obj->width / 2) <(sizeoftiles * x))
+                    {
+                        obj->velocity[0] = 0;
+                        xchange =obj->x - fabs((obj->x + (fabs(obj->width)))) - ((sizeoftiles * x)) - sizeoftiles - 0.0001f;
+                        leftcol = true;
                     }
                 }
             }
+        }
+        if(upcol || downcol)
+        {
+            obj->y = ychange;
+        }
+        if(leftcol || rightcol)
+        {
+            obj->x = xchange;
         }
     }
     void collisions(float elapsed)
     {
         for (Entity* i : entities)
         {
-            collx(i);
             colly(i);
+            //collx(i);
         }
-        collx(&Player);
         colly(&Player);
+        //collx(&Player);
         if (Player.collision(entities[0]))
         {
             Player.dead = true;
@@ -659,7 +699,7 @@ int main(int argc, char *argv[])
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     projectionMatrix = glm::ortho(-1.777f, 1.777f, -1.0f, 1.0f, -1.0f, 1.0f);
     GLuint d = LoadTexture(RESOURCE_FOLDER"font1.png");
-    GLuint e = LoadTexture(RESOURCE_FOLDER"sheet.png");
+    //GLuint e = LoadTexture(RESOURCE_FOLDER"sheet.png");
     //SheetSprite(d,)
     text space;
     text lose;
@@ -734,8 +774,8 @@ int main(int argc, char *argv[])
         }
         else
         {
+            //std::cout<<"MainGame"<<std::endl;
             while (elapsed >= FIXED_TIMESTEP) {
-                
                 elapsed -= FIXED_TIMESTEP;
             }
             World.update(elapsed);
