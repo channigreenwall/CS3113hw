@@ -1,3 +1,11 @@
+//L1 catch 1 boy
+//steady timer in corner 10 secs
+//L2 catch 2 boys
+//steady timer in corner 15 secs
+//L3 catch 3 boys
+//steady timer in corner 20 secs
+//purposely collision with clouds
+
 #ifdef _WINDOWS
 #include <GL/glew.h>
 #endif
@@ -22,8 +30,17 @@
 #define SPRITE_COUNT_X 16
 #define SPRITE_COUNT_Y 8
 #define TILE_SIZE 0.13f
+#include <SDL_mixer.h>
 
+enum GameMode{ MAIN_MENU, GAME_LEVEL1, GAME_LEVEL2, GAME_LEVEL3, GAME_OVER};
+glm::mat4 viewMatrix = glm::mat4(1.0f); //4 by 4 matrix
+
+GameMode mode=MAIN_MENU;
+ShaderProgram program;
 SDL_Window* displayWindow;
+Mix_Music *music;
+Mix_Chunk *sound;
+
 //images mapped to index pass in index of image you want to draw from
 void DrawSpriteSheetSprite(ShaderProgram &program, int index, int spriteCountX,
                            int spriteCountY,GLuint texture) {
@@ -86,6 +103,7 @@ FlareMap map;
 GLuint spritesheettexture;
 GLuint bettytexture;
 GLuint georgetexture;
+GLuint fonttexture;
 
 GLuint LoadTexture(const char *filePath) {
     int w,h,comp;
@@ -146,18 +164,115 @@ void DrawTileMap(ShaderProgram& program) {
 
 }
 
-void render(ShaderProgram& program){
-    glClear(GL_COLOR_BUFFER_BIT);
+void renderlevel1(ShaderProgram& program){
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     program.SetModelMatrix(modelMatrix);
     DrawTileMap(program);
     betty.Draw(program);
     george.Draw(program);
     //follow betty with camera
-    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    viewMatrix = glm::mat4(1.0f);
     //was at mid screen 0,0 so we change view matrix so we see it differently ie translate ir
     viewMatrix = glm::translate(viewMatrix, glm::vec3(std::min(-1.77f, -betty.x),std::min(1.0f, -betty.y),0.0f)); //vector of 3
     program.SetViewMatrix(viewMatrix);
+}
+
+void renderlevel2(ShaderProgram& program){
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    program.SetModelMatrix(modelMatrix);
+    DrawTileMap(program);
+    betty.Draw(program);
+    george.Draw(program);
+    //follow betty with camera
+    viewMatrix = glm::mat4(1.0f);
+    //was at mid screen 0,0 so we change view matrix so we see it differently ie translate ir
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(std::min(-1.77f, -betty.x),std::min(1.0f, -betty.y),0.0f)); //vector of 3
+    program.SetViewMatrix(viewMatrix);
+}
+
+void renderlevel3(ShaderProgram& program){
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    program.SetModelMatrix(modelMatrix);
+    DrawTileMap(program);
+    betty.Draw(program);
+    george.Draw(program);
+    //follow betty with camera
+    viewMatrix = glm::mat4(1.0f);
+    //was at mid screen 0,0 so we change view matrix so we see it differently ie translate ir
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(std::min(-1.77f, -betty.x),std::min(1.0f, -betty.y),0.0f)); //vector of 3
+    program.SetViewMatrix(viewMatrix);
+}
+
+void DrawText(ShaderProgram &program, int fontTexture, std::string text, float size, float spacing) {
+    float character_size = 1.0/16.0f;
+    std::vector<float> vertexData;
+    std::vector<float> texCoordData;
+    for(int i=0; i < text.size(); i++) {
+        int spriteIndex = (int)text[i];
+        float texture_x = (float)(spriteIndex % 16) / 16.0f;
+        float texture_y = (float)(spriteIndex / 16) / 16.0f;
+        vertexData.insert(vertexData.end(), {
+            ((size+spacing) * i) + (-0.5f * size), 0.5f * size,
+            ((size+spacing) * i) + (-0.5f * size), -0.5f * size,
+            ((size+spacing) * i) + (0.5f * size), 0.5f * size,
+            ((size+spacing) * i) + (0.5f * size), -0.5f * size,
+            ((size+spacing) * i) + (0.5f * size), 0.5f * size,
+            ((size+spacing) * i) + (-0.5f * size), -0.5f * size,
+        });
+        texCoordData.insert(texCoordData.end(), {
+            texture_x, texture_y,
+            texture_x, texture_y + character_size,
+            texture_x + character_size, texture_y,
+            texture_x + character_size, texture_y + character_size,
+            texture_x + character_size, texture_y,
+            texture_x, texture_y + character_size,
+        }); }
+    glBindTexture(GL_TEXTURE_2D, fonttexture);
+    glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertexData.data());
+    glEnableVertexAttribArray(program.positionAttribute);
+    glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoordData.data());
+    glEnableVertexAttribArray(program.texCoordAttribute);
+    glDrawArrays(GL_TRIANGLES, 0, vertexData.size()/2); //6 vertices per thing
+    glDisableVertexAttribArray(program.positionAttribute);
+    glDisableVertexAttribArray(program.texCoordAttribute);
+    // draw this data (use the .data() method of std::vector to get pointer to data)
+    // draw this yourself, use text.size() * 6 or vertexData.size()/2 to get number of vertices
+}
+
+void rendermainmenu(ShaderProgram& program){
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.6,0,0.0f));
+    program.SetModelMatrix(modelMatrix);
+    DrawText(program, fonttexture, "Girls Run the World", 0.1f, 0.0f);
+}
+
+void rendergameover(ShaderProgram& program){
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.6,0,0.0f));
+    program.SetModelMatrix(modelMatrix);
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    program.SetViewMatrix(viewMatrix); //reset cam to 0,0 because u oved player so u need it to move with player so you can see text
+    DrawText(program, fonttexture, "Couldn't Catch Him", 0.17f, 0.0f);
+}
+
+void render(ShaderProgram& program){
+    switch(mode){
+        case MAIN_MENU:
+            rendermainmenu(program);
+            break;
+        case GAME_LEVEL1:
+            renderlevel1(program);
+            break;
+        case GAME_LEVEL2:
+            renderlevel2(program);
+            break;
+        case GAME_LEVEL3:
+            renderlevel3(program);
+            break;
+        case GAME_OVER:
+            rendergameover(program);
+            break;
+    }
 }
 
 //makes mid val value between the 2
@@ -179,8 +294,49 @@ bool collision(Entity& a, Entity& b){
     }
     return false;
 }
-//use elapsed time because different comps diff speeds so makes game run same on all comps
-void update(float elapsed){
+
+float animationTime =0.0f; //how much time has passed
+
+float mapValue(float value, float srcMin, float srcMax, float dstMin, float dstMax) {
+    float retVal = dstMin + ((value - srcMin)/(srcMax-srcMin) * (dstMax-dstMin));
+    if(retVal < dstMin) {
+        retVal = dstMin;
+    }
+    if(retVal > dstMax) {
+        retVal = dstMax;
+    }
+    return retVal;
+}
+
+float levelTime = 20.0f;
+int boyscaught = 0;
+void updatelevel1(float elapsed){
+    
+    
+    
+    animationTime=animationTime+elapsed; //num of seconds that have passed in real time
+    float animationValue = mapValue(animationTime, 0.2f, 10.5f, 0.0f, 1.0f); //from second 2 to sec 10.5 move right
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    float xPos = lerp(0.0f, 3.0f, animationValue);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(xPos, -0.5f, 0.0f));
+    program.SetModelMatrix(modelMatrix);
+    DrawText(program, fonttexture, "LEVEL ONE", 0.25f, 0.0f);
+    
+    //draw timer
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(betty.x, betty.y + 0.1f, 0.0f));
+    program.SetModelMatrix(modelMatrix);
+    float remainingTime = levelTime - animationTime;
+    DrawText(program, fonttexture, std::to_string((int)remainingTime), 0.1f, 0.0f);
+    if (remainingTime<=0){
+        if(boyscaught>0){
+            mode=GAME_LEVEL2;
+        }
+        else{
+            mode=GAME_OVER;
+        }
+    }
+
     betty.collidedbottom=false;
     betty.acceleration.x=0.0f;
     betty.acceleration.y=-1.0f;//speed
@@ -230,8 +386,61 @@ void update(float elapsed){
         //penetration how much she went up
         betty.y -=penetration; //push her down by that much
     }
+    
+    //george movement
+    george.x+=george.velocity.x*elapsed;
+    //left collision
+    worldToTileCoordinates(george.x-george.width/2, george.y, gridx, gridy);
+    if(gridy>=0 && gridx>=0 && map.mapData[gridy][gridx]!=0){
+        //so you are standing on something
+        float penetration = fabs(((TILE_SIZE*gridx)+TILE_SIZE)-(george.x-george.width/2));
+        george.x +=penetration; //push her up by that much right because you are going left
+        george.velocity.x *= -1; //if he collides push him other way
+    }
+    //right collision
+    worldToTileCoordinates(george.x+george.width/2, george.y, gridx, gridy);
+    if(gridy>=0 && gridx>=0 && map.mapData[gridy][gridx]!=0){
+        //so you are standing on something
+        float penetration = fabs((TILE_SIZE*gridx)-(george.x+george.width/2));
+        george.x -=penetration; //move right so push left
+        george.velocity.x *= -1; //if he collides push him other way
+    }
+    george.y += george.velocity.y * elapsed; //move betty
+    //bottom collision to see if hit floor
+    worldToTileCoordinates(george.x, george.y-george.height/2, gridx, gridy);
+    if(gridy>=0 && gridx>=0 && map.mapData[gridy][gridx]!=0){
+        //so you are standing on something
+        float penetration = fabs((-TILE_SIZE*gridy)-(george.y-george.height/2));
+        george.y +=penetration; //push him up by that much
+        george.collidedbottom=true;
+    }
+    
+    
     if(collision(betty, george)){
+        Mix_PlayChannel(-1, sound, 0);
         george.x=50000.0f;//if rthey collide mov george offscreen
+        boyscaught+=1;
+        mode=GAME_LEVEL2;
+    }
+}
+void updatelevel2(float elapsed){}
+
+void updatelevel3(float elapsed){}
+
+//use elapsed time because different comps diff speeds so makes game run same on all comps
+void update(float elapsed){
+    switch(mode){ //check mode
+        case MAIN_MENU:
+            break;
+        case GAME_LEVEL1:
+            updatelevel1(elapsed);
+            break;
+        case GAME_LEVEL2:
+            updatelevel2(elapsed);
+            break;
+        case GAME_LEVEL3:
+            updatelevel3(elapsed);
+            break;
     }
 }
 
@@ -244,15 +453,14 @@ int main(int argc, char *argv[])
     SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
     SDL_GL_MakeCurrent(displayWindow, context);
     glViewport(0, 0, 640, 360);
-    ShaderProgram program;
     program.Load(RESOURCE_FOLDER"vertex_textured.glsl",RESOURCE_FOLDER"fragment_textured.glsl");
     spritesheettexture=LoadTexture(RESOURCE_FOLDER"arne_sprites.png");
     bettytexture=LoadTexture(RESOURCE_FOLDER"betty_0.png");
     georgetexture=LoadTexture(RESOURCE_FOLDER"george_0.png");
+    fonttexture=LoadTexture(RESOURCE_FOLDER"font1.png");
     glm::mat4 projectionMatrix = glm::mat4(1.0f);
     projectionMatrix = glm::ortho(-1.777f, 1.777f, -1.0f, 1.0f, -1.0f, 1.0f);
     
-    glm::mat4 viewMatrix = glm::mat4(1.0f); //4 by 4 matrix
 
     program.SetProjectionMatrix(projectionMatrix);
     program.SetViewMatrix(viewMatrix);
@@ -286,6 +494,8 @@ int main(int argc, char *argv[])
             george.spritesheetW=4;
             george.width=TILE_SIZE;
             george.height=TILE_SIZE;
+            george.velocity.x = 0.5f;
+            george.velocity.y = -1.0f;
         }
         
         
@@ -293,6 +503,11 @@ int main(int argc, char *argv[])
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+    music=Mix_LoadMUS(RESOURCE_FOLDER"run.mp3");
+    Mix_PlayMusic(music, -1);
+    sound= Mix_LoadWAV(RESOURCE_FOLDER"catch.wav");
     
     SDL_Event event;
     bool done = false;
@@ -302,12 +517,22 @@ int main(int argc, char *argv[])
                 done = true;
             }
             if(event.type==SDL_KEYDOWN){
-                if(betty.collidedbottom && event.key.keysym.scancode == SDL_SCANCODE_SPACE){
-                    betty.velocity.y+=3.0f;
+                if (mode == MAIN_MENU) {
+                    if(event.key.keysym.scancode == SDL_SCANCODE_SPACE){//space was pressed
+                        mode=GAME_LEVEL1;
+                    }
                 }
+                else if (mode == GAME_LEVEL1) {
+                    if(betty.collidedbottom && event.key.keysym.scancode == SDL_SCANCODE_SPACE){
+                        betty.velocity.y+=3.0f;
+                    }
+                }
+                
+                
             }
         }
-        
+        glClear(GL_COLOR_BUFFER_BIT);
+
         float ticks = (float)SDL_GetTicks()/1000.0f;
         float elapsed = ticks - lastFrameTicks;
         lastFrameTicks = ticks;
@@ -316,7 +541,7 @@ int main(int argc, char *argv[])
             accumulator = elapsed;
             continue; }
         while(elapsed >= FIXED_TIMESTEP) {
-            update(FIXED_TIMESTEP);
+            update(FIXED_TIMESTEP); //do diff things if on main menu or game level
             elapsed -= FIXED_TIMESTEP;
         }
         accumulator = elapsed;

@@ -25,6 +25,10 @@
 		C2C1ABD2227B85C0004FEDAB /* FlareMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C2C1ABD0227B85C0004FEDAB /* FlareMap.cpp */; };
 		C2C1ABD5227B9110004FEDAB /* betty_0.png in Resources */ = {isa = PBXBuildFile; fileRef = C2C1ABD3227B910F004FEDAB /* betty_0.png */; };
 		C2C1ABD6227B9110004FEDAB /* george_0.png in Resources */ = {isa = PBXBuildFile; fileRef = C2C1ABD4227B910F004FEDAB /* george_0.png */; };
+		C2C1ABD8227F9125004FEDAB /* font1.png in Resources */ = {isa = PBXBuildFile; fileRef = C2C1ABD7227F9124004FEDAB /* font1.png */; };
+		C2C1ABDA228260A3004FEDAB /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2C1ABD9228260A3004FEDAB /* SDL2_mixer.framework */; };
+		C2C1ABDE228261A2004FEDAB /* run.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C2C1ABDD228261A2004FEDAB /* run.mp3 */; };
+		C2C1ABE2228265AF004FEDAB /* catch.wav in Resources */ = {isa = PBXBuildFile; fileRef = C2C1ABE1228265AF004FEDAB /* catch.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +57,10 @@
 		C2C1ABD1227B85C0004FEDAB /* FlareMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlareMap.h; sourceTree = "<group>"; };
 		C2C1ABD3227B910F004FEDAB /* betty_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = betty_0.png; sourceTree = "<group>"; };
 		C2C1ABD4227B910F004FEDAB /* george_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = george_0.png; sourceTree = "<group>"; };
+		C2C1ABD7227F9124004FEDAB /* font1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = font1.png; sourceTree = "<group>"; };
+		C2C1ABD9228260A3004FEDAB /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2_mixer.framework; sourceTree = "<group>"; };
+		C2C1ABDD228261A2004FEDAB /* run.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = run.mp3; sourceTree = "<group>"; };
+		C2C1ABE1228265AF004FEDAB /* catch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = catch.wav; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +69,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D5AC2D019AE6280004CB1BF /* OpenGL.framework in Frameworks */,
+				C2C1ABDA228260A3004FEDAB /* SDL2_mixer.framework in Frameworks */,
 				6D5A86AE19AE5C710066C1FD /* Cocoa.framework in Frameworks */,
 				6D5A86E319AE5CD10066C1FD /* SDL2.framework in Frameworks */,
 				6D5AC2D219AE6A1E004CB1BF /* SDL2_image.framework in Frameworks */,
@@ -90,6 +99,7 @@
 		6D5A86AC19AE5C710066C1FD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C2C1ABD9228260A3004FEDAB /* SDL2_mixer.framework */,
 				6D5AC2D119AE6A1E004CB1BF /* SDL2_image.framework */,
 				6D5AC2CF19AE6280004CB1BF /* OpenGL.framework */,
 				6D5A86E219AE5CD10066C1FD /* SDL2.framework */,
@@ -134,6 +144,9 @@
 			children = (
 				C2C1ABD3227B910F004FEDAB /* betty_0.png */,
 				C2C1ABD4227B910F004FEDAB /* george_0.png */,
+				C2C1ABD7227F9124004FEDAB /* font1.png */,
+				C2C1ABDD228261A2004FEDAB /* run.mp3 */,
+				C2C1ABE1228265AF004FEDAB /* catch.wav */,
 				C2C1ABD0227B85C0004FEDAB /* FlareMap.cpp */,
 				C2C1ABD1227B85C0004FEDAB /* FlareMap.h */,
 				C2C1ABCC227B8561004FEDAB /* arne_sprites.png */,
@@ -202,13 +215,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2C1ABD8227F9125004FEDAB /* font1.png in Resources */,
 				6D5A86B819AE5C710066C1FD /* InfoPlist.strings in Resources */,
+				C2C1ABE2228265AF004FEDAB /* catch.wav in Resources */,
 				C2C1ABD5227B9110004FEDAB /* betty_0.png in Resources */,
 				6DEF23C11B96CC2600BCE792 /* fragment.glsl in Resources */,
 				C2C1ABCE227B8561004FEDAB /* arne_sprites.png in Resources */,
 				C2C1ABCF227B8561004FEDAB /* level1.txt in Resources */,
 				6DE9D2F11BA6AB8C002D599C /* fragment_textured.glsl in Resources */,
 				6D5A86C619AE5C710066C1FD /* Images.xcassets in Resources */,
+				C2C1ABDE228261A2004FEDAB /* run.mp3 in Resources */,
 				6D5A86BE19AE5C710066C1FD /* Credits.rtf in Resources */,
 				6DEF23C41B96CC2600BCE792 /* vertex.glsl in Resources */,
 				C2C1ABD6227B9110004FEDAB /* george_0.png in Resources */,
@@ -329,6 +345,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
@@ -337,6 +354,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					/Library/Frameworks/SDL2_image.framework/Versions/A/Headers,
 					/Library/Frameworks/SDL2.framework/Versions/A/Headers,
+					/Library/Frameworks/SDL2_mixer.framework/Versions/A/Headers,
 				);
 				INFOPLIST_FILE = "NYUCodebase/NYUCodebase-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -352,6 +370,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
